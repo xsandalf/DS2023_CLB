@@ -1,0 +1,74 @@
+# Must start vith version tag
+version: "3.8"
+
+# Service = container, keyword services is needed to create containers
+services:
+
+    # Keyword can be chosen freely
+    # Create client
+    client:
+        # Build variables
+        build:
+          # Needed for Docker to find requirements.txt while building images
+          # See /client/Dockerfile for explanation
+          # Could cause building process to hang if project gets too massive :D
+          context: ./
+          # Build path to Dockerfile
+          dockerfile: client/Dockerfile
+
+        # Connect container port to pc port (pc:container)
+        # Container port can be found from /client/Dockerfile
+        ports:
+          - 3001:3001
+
+        # To execute a command after image is created use command:
+        # Flask doesn't like command issues from here so be careful
+        #command: echo "Does this work :D"
+
+        # Set network mode
+        # network_mode: host
+
+        # If others should wait until certain container is ready, e.g. client should wait for server
+        # Wait for database and server to be ready first
+        depends_on:
+          - server
+          - database
+
+    # Create server
+    server:
+        # Build variables
+        build:
+          # Needed for Docker to find requirements.txt while building images
+          # See /server/Dockerfile for explanation
+          # Could cause building process to hang if project gets too massive :D
+          context: ./
+          # Build path to Dockerfile
+          dockerfile: server/Dockerfile
+
+        # Connect container port to pc port (pc:container)
+        # Container port can be found from /server/Dockerfile
+        ports:
+          - 3002:3002
+
+        # Wait for database to ready first
+        depends_on:
+         - database
+
+    # Create database
+    database:
+        # Build variables
+        build:
+          # Needed for Docker to find requirements.txt while building images
+          # See /database/Dockerfile for explanation
+          # Could cause building process to hang if project gets too massive :D
+          context: ./
+          # Build path to Dockerfile
+          dockerfile: database/Dockerfile
+
+        # Connect container port to pc port (pc:container)
+        # Container port can be found from /database/Dockerfile
+        ports:
+          - 3003:3003
+
+        #depends_on:
+        # -

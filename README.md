@@ -33,6 +33,29 @@ Start CLB:
 docker-compose up
 ```
 
+## First Start Guide for Windows
+
+We strongly recommend using a Python virtual environment. So after pulling the repository and changing into the main directory, create a new virtual environment with: (if you don't have venv-module installed, please install it with pip)
+```
+python -m venv venv/
+```
+It's important to name the virtual environment directory venv/ as that is included in the .gitignore file. Please do not push your venv to our beautiful repository :).
+
+You can now activate the virtual environment from the main directory:
+```
+cd venv & cd scripts & activate & cd ../..
+```
+
+Now install the required packages with pip:
+```
+pip install -r requirements.txt
+```
+
+Start CLB:
+```
+docker-compose up
+```
+
 ## Quick Start Guide for \*nix (for every use after First Start Guide)
 
 In the main directory:
@@ -44,6 +67,24 @@ source venv/bin/activate
 Make sure your packages are up to date:
 ```
 pip3 install -r requirements.txt
+```
+
+Start CLB:
+```
+docker-compose up
+```
+
+## Quick Start Guide for Windows (for every use after First Start Guide)
+
+In the main directory:
+Activate the virtual environment:
+```
+cd venv & cd scripts & activate & cd ../..
+```
+
+Make sure your packages are up to date:
+```
+pip install -r requirements.txt
 ```
 
 Start CLB:

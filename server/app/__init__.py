@@ -10,10 +10,11 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 port_number = -1
-# Read port number from text file, created in Dockerfile
+name = ""
+# Read port number and name from text file, created in Dockerfile
 with open("port.txt") as f:
     #print(f.readline(), flush=True)
-    port_number = int(f.readline())
+    name, port_number = f.readline().split(",")
 
 # Registers the client container with the database container
 def register_container(port_number):
@@ -21,11 +22,11 @@ def register_container(port_number):
     url = "http://database:3003/register"
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
-    # Send the POST-request with log data to database container
-    return requests.post(url, data=str(port_number), headers=headers)
+    # Send the POST-request with container information to database container
+    requests.post(url, data="{},{}".format(name, port_number), headers=headers)
 
 # Register container to database
-response = register_container(port_number=port_number)
+register_container(port_number=port_number)
 
 # Import at the bottom to prevent circular imports
 from app import routes

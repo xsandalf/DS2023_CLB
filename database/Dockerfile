@@ -32,7 +32,7 @@ ENV FLASK_APP=database.py
 
 # TODO: combine all the commands into a entrypoint.sh script and run that instead
 # Store port number in a file, so it can be accessed programmatically
-RUN echo "3003" > port.txt
+RUN echo "database,3003" > port.txt
 
 # Run flask
 # THIS HAS TO BE LAST CMD IN THE FILE

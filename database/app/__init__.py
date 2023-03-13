@@ -15,10 +15,11 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db, render_as_batch=True)
 
 port_number = -1
-# Read port number from text file, created in Dockerfile
+name = ""
+# Read port number and name from text file, created in Dockerfile
 with open("port.txt") as f:
     #print(f.readline(), flush=True)
-    port_number = int(f.readline())
+    name, port_number = f.readline().split(",")
 
 # Import at the bottom to prevent circular imports
 from app import routes, models

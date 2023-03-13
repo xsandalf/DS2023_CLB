@@ -22,10 +22,17 @@ def client_logs():
 def register_container():
     if request.method == "POST":
         if request.data != "":
-            print(request.data, flush=True)
+            #print(request.data, flush=True)
             print("läpimätä", flush=True)
-            port_number = request.data
+            # Extract container name and port number from POST-request
+            name, port_number = request.data.decode("utf-8").strip().split(",")
+            print(name)
+            print(port_number)
+            role = "client" if name == "client" else "server"
+            print(role)
             with app.app_context():
-                container = Container.query.filter_by(port=port_number).first()
-                print(container, flush=True)
-    return "Hello, World!"
+                #container = Container.query.filter_by(port=port_number).first()
+                container = Container(name=name, port=port_number, role=role)
+                db.session.add(container)
+                db.session.commit()
+    return "OK"

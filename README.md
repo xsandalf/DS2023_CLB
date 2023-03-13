@@ -35,7 +35,7 @@ docker-compose up
 
 ## First Start Guide for Windows
 
-We strongly recommend using a Python virtual environment. So after pulling the repository and changing into the main directory (DS2023_CLB), create a new virtual environment with: (if you don't have venv-module installed, please install it with pip)
+We strongly recommend using a Python virtual environment. So after pulling the repository and changing into the main directory (DS2023_CLB), create a new virtual environment with: (if you don't have virtualenv-module installed, please install it with pip)
 ```
 python -m venv venv/
 ```

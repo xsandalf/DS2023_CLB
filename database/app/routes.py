@@ -58,6 +58,18 @@ def leader():
             LEADER = ",".join((str(container.name), str(container.port)))
         return (LEADER, 200)
 
+# Tell requesting container who are the worker containers
+@app.route("/workers", methods=["GET", "POST"])
+def workers():
+    if request.method == "POST":
+        global LEADER
+        container = ""
+        with app.app_context():
+            port = LEADER.split(",")[1]
+            container = db.session.query(Container).filter(Container.role == "server" and Container.port != int(port)).all()
+            print(container)
+        return (LEADER, 200)
+
 # Empties the database on every build
 @app.before_first_request
 def clear_database():

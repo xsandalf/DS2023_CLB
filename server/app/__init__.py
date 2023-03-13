@@ -23,6 +23,7 @@ with open("port.txt") as f:
 
 # Registers the client container with the database container
 def register_container(port_number):
+    global ID
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
     url = "http://database:3003/register"
     # Basic headers
@@ -33,6 +34,8 @@ def register_container(port_number):
 
 def get_master_container():
     global IS_LEADER
+    global LEADER_NAME
+    global LEADER_PORT
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
     url = "http://database:3003/leader"
     # Basic headers
@@ -40,8 +43,10 @@ def get_master_container():
     # Send the POST-request with container information to database container
     LEADER_NAME, LEADER_PORT = requests.post(url, data="", headers=headers).text.split(",")
     print(LEADER_NAME, flush=True)
+    print(NAME, flush=True)
     print(LEADER_PORT, flush=True)
-    if NAME == LEADER_NAME and PORT_NUMBER == LEADER_PORT:
+    print(PORT_NUMBER, flush=True)
+    if NAME == LEADER_NAME and int(PORT_NUMBER) == int(LEADER_PORT):
         IS_LEADER = True
     print(IS_LEADER, flush=True)
 

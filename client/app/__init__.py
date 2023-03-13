@@ -20,6 +20,7 @@ with open("port.txt") as f:
 
 # Registers the client container with the database containers
 def register_container(port_number):
+    global ID
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
     url = "http://database:3003/register"
     # Basic headers

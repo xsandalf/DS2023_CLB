@@ -33,6 +33,9 @@ services:
         depends_on:
           - server
           - database
+          - worker1
+          - worker2
+          - worker3
 
     # Create server
     server:

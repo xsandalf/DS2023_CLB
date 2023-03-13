@@ -30,7 +30,7 @@ def register_container(port_number):
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with container information to database container
     ID = int(requests.post(url, data="{},{}".format(NAME, PORT_NUMBER), headers=headers).text)
-    print(ID, flush=True)
+    #print(ID, flush=True)
 
 def get_master_container():
     global IS_LEADER
@@ -42,13 +42,13 @@ def get_master_container():
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with container information to database container
     LEADER_NAME, LEADER_PORT = requests.post(url, data="", headers=headers).text.split(",")
-    print(LEADER_NAME, flush=True)
-    print(NAME, flush=True)
-    print(LEADER_PORT, flush=True)
-    print(PORT_NUMBER, flush=True)
+    #print(LEADER_NAME, flush=True)
+    #print(NAME, flush=True)
+    #print(LEADER_PORT, flush=True)
+    #print(PORT_NUMBER, flush=True)
     if NAME == LEADER_NAME and int(PORT_NUMBER) == int(LEADER_PORT):
         IS_LEADER = True
-    print(IS_LEADER, flush=True)
+    #print(IS_LEADER, flush=True)
 
 # Register container to database
 register_container(port_number=PORT_NUMBER)

@@ -33,10 +33,10 @@ def register_container():
             #print("läpimätä", flush=True)
             # Extract container name and port number from POST-request
             name, port_number = request.data.decode("utf-8").strip().split(",")
-            print(name)
-            print(port_number)
+            #print(name)
+            #print(port_number)
             role = "client" if name == "client" else "server"
-            print(role)
+            #print(role)
             with app.app_context():
                 #container = Container.query.filter_by(port=port_number).first()
                 container = Container(name=name, port=int(port_number), role=role)

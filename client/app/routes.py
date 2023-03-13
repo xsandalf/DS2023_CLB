@@ -48,8 +48,6 @@ def index():
                 payload_hash = hash(PAYLOAD)
                 # Store payload, its hash, and current state to a dictionary
                 PAYLOADS.append({"hash" : str(payload_hash), "payload" : PAYLOAD, "result" : "executing"})
-                # Empty payload so user cannot flood the system with the same payload
-                PAYLOAD = ""
                 # Log payload creation and sending
                 LOGS.append("Created payload: {hash}".format(hash=payload_hash))
                 LOGS.append("Sent payload: {hash} for execution to port: {port}".format(hash=payload_hash, port=LEADER_PORT))
@@ -58,7 +56,10 @@ def index():
                                       .format(id=ID, hash=payload_hash, port=LEADER_PORT))
 
                 # Send payload to master container
+                print(PAYLOAD, flush=True)
                 send_payload(",".join([str(payload_hash), PAYLOAD]))
+                # Empty payload so user cannot flood the system with the same payload
+                PAYLOAD = ""
                 # Re-render page and show the payload in the execution table
                 return render_template("index.html", generated_payload=PAYLOAD, payloads=PAYLOADS)
     # Reset variables on GET-requests
@@ -92,6 +93,7 @@ def send_payload(data):
     # URL needs include protocol
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
     url = "http://{}:{}/payload".format(LEADER_NAME, LEADER_PORT)
+    #print(url, flush=True)
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
@@ -108,5 +110,5 @@ def get_master_container():
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with container information to database container
     LEADER_NAME, LEADER_PORT = requests.post(url, data="", headers=headers).text.split(",")
-    print(LEADER_NAME, flush=True)
-    print(LEADER_PORT, flush=True)
+    #print(LEADER_NAME, flush=True)
+    #print(LEADER_PORT, flush=True)

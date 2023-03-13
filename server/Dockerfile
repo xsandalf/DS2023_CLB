@@ -31,6 +31,8 @@ COPY ./server/ ./
 ENV FLASK_APP=server.py
 
 # TODO: combine all the commands into a entrypoint.sh script and run that instead
+# Store port number in a file, so it can be accessed programmatically
+RUN echo "3002" > port.txt
 
 # Run flask
 # THIS HAS TO BE LAST CMD IN THE FILE

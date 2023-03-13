@@ -4,6 +4,7 @@
 from app import app
 from flask import render_template, request
 from random import randint
+import requests
 
 # Bad coding practice, "dirty hack" :D
 payload = ""
@@ -50,6 +51,7 @@ def index():
                 # Log payload creation and sending
                 logs.append("Created payload: {hash}".format(hash=payload_hash))
                 logs.append("Sent payload: {hash} for execution".format(hash=payload_hash))
+                send_logging_post_req("LOL XDpip ")
                 # Re-render page and show the payload in the execution table
                 return render_template("index.html", generated_payload=payload, payloads=payloads)
     # Reset variables on GET-requests
@@ -69,3 +71,10 @@ def logging():
     global logs
     # Return logs.html with additional paremeter
     return render_template("logs.html", logs=logs)
+
+
+def send_logging_post_req(data):
+    # URL for database, check port number from /DS2023_CLB/docker-compose.yml for changes
+    url = '127.0.0.1:3003/client_logs'
+    headers = {'Content-type': 'text/html; charset=UTF-8'}
+    requests.post(url, data=data, headers=headers)

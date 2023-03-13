@@ -9,6 +9,8 @@ class Container(db.Model):
     port = db.Column(db.Integer, index=True, unique=True)
     # Either "client" or "server"
     role = db.Column(db.String(255), index=True)
+    # Name of the container as typed in docker-compose.yml
+    name = db.Column(db.String(255), index=True)
 
     def __repr__(self):
         return "<Container {}, port {}>".format(self.id, self.port)

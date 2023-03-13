@@ -33,7 +33,9 @@ def get_containers():
         headers = {"Content-type": "text/html; charset=UTF-8"}
         # Send the POST-request with container information to database container
         #LEADER_NAME, LEADER_PORT = requests.post(url, data="", headers=headers).text.split(",")
-        requests.post(url, data="", headers=headers)#.text.split(",")
+        containers = requests.post(url, data="", headers=headers).text.split(",")
+        containers.pop()
+        print(containers, flush=True)#.text.split(",")
     print(LEADER_NAME, flush=True)
     print(LEADER_PORT, flush=True)
 

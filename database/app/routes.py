@@ -66,9 +66,15 @@ def workers():
         container = ""
         with app.app_context():
             port = LEADER.split(",")[1]
-            container = db.session.query(Container).filter(Container.role == "server" and Container.port != int(port)).all()
-            print(container)
-        return (LEADER, 200)
+            container = db.session.query(Container).filter((Container.role == "server") & (Container.port != port)).all()
+            containers = ""
+            for c in container:
+                containers += "{},{},".format(c.name, str(c.port))
+            #print("________", flush=True)
+            #print(container, flush=True)
+            #print(containers)
+            #print("________", flush=True)
+        return (containers, 200)
 
 # Empties the database on every build
 @app.before_first_request

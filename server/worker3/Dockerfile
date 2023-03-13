@@ -21,19 +21,19 @@ COPY requirements.txt requirements.txt
 # Install pip dependencies
 RUN pip3 install -r requirements.txt
 
-# Copy all from current directory (client/)
+# Copy all from current directory (server/)
 # Second problem: Due to context flag in /DS2023_CLB/docker-compose.yml,
 # this copies everything in /DS2023_CLB directory
-# Solution: Change ./ to ./database/ to specify the correct directory
-COPY ./database/ ./
+# Solution: Change ./ to ./server/ to specify the correct directory
+COPY ./server/ ./
 
 # Set Flask env
-ENV FLASK_APP=database.py
+ENV FLASK_APP=server.py
 
 # TODO: combine all the commands into a entrypoint.sh script and run that instead
 # Store port number and name in a file, so it can be accessed programmatically
-RUN echo "database,3003" > port.txt
+RUN echo "worker3,3006" > port.txt
 
 # Run flask
 # THIS HAS TO BE LAST CMD IN THE FILE
-CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=3003"]
+CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=3006"]

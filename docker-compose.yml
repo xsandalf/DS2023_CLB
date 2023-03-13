@@ -54,6 +54,69 @@ services:
         depends_on:
          - database
 
+    # Create worker
+    worker1:
+        # Build variables
+        build:
+          # Needed for Docker to find requirements.txt while building images
+          # See /server/Dockerfile for explanation
+          # Could cause building process to hang if project gets too massive :D
+          context: ./
+          # Build path to Dockerfile
+          dockerfile: server/worker1/Dockerfile
+
+        # Connect container port to pc port (pc:container)
+        # Container port can be found from /server/Dockerfile
+        ports:
+          - 3004:3004
+
+        # Wait for database to ready first
+        depends_on:
+         - database
+         - server
+
+    # Create worker
+    worker2:
+        # Build variables
+        build:
+          # Needed for Docker to find requirements.txt while building images
+          # See /server/Dockerfile for explanation
+          # Could cause building process to hang if project gets too massive :D
+          context: ./
+          # Build path to Dockerfile
+          dockerfile: server/worker2/Dockerfile
+
+        # Connect container port to pc port (pc:container)
+        # Container port can be found from /server/Dockerfile
+        ports:
+          - 3005:3005
+
+        # Wait for database to ready first
+        depends_on:
+         - database
+         - server
+
+    # Create worker
+    worker3:
+        # Build variables
+        build:
+          # Needed for Docker to find requirements.txt while building images
+          # See /server/Dockerfile for explanation
+          # Could cause building process to hang if project gets too massive :D
+          context: ./
+          # Build path to Dockerfile
+          dockerfile: server/worker3/Dockerfile
+
+        # Connect container port to pc port (pc:container)
+        # Container port can be found from /server/Dockerfile
+        ports:
+          - 3006:3006
+
+        # Wait for database to ready first
+        depends_on:
+         - database
+         - server
+
     # Create database
     database:
         # Build variables

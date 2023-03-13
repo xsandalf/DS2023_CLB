@@ -71,7 +71,7 @@ pip3 install -r requirements.txt
 
 Start CLB:
 ```
-docker-compose build & docker-compose up
+docker-compose build && docker-compose up
 ```
 
 ## Quick Start Guide for Windows (for every use after First Start Guide)

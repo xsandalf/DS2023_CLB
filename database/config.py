@@ -11,7 +11,7 @@ class Config(object):
     # File path for database, looks for the the environment variable first,
     # if that is not available, uses the hard coded file path
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or \
-        "sqlite:///"" + os.path.join(basedir, "app.db")
+        "sqlite:///" + os.path.join(basedir, "app.db")
     # This flag would signal the application everytime a change is made
     # Not needed in our case
     SQLALCHEMY_TRACK_MODIFICATIONS = False

@@ -10,8 +10,15 @@
             <pre><div>{{ generated_payload }}</div></pre>
             <input type="submit" name="send_payload" value="Send Payload">
         </form>
+        <h2>Payloads</h2>
         {% for payload in payloads %}
-        <div><p>{{ payload.hash }}: <b>{{ payload.result }}</b></p></div>
+        <table>
+            <thead><tr><th>Hash</th><th>Payload</th><th>Result</th></tr></thead>
+            <tbody>
+                <tr><td>{{ payload.hash }}</td><td><pre>{{ payload.payload }}</pre></td><td>{{ payload.result }}</td></tr>
+            </tbody>
+        </table>
+        <!--<pre><div><p>{{ payload.hash }}: <b>{{ payload.payload }}</b>: <b>{{ payload.result }}</b></p></div></pre>--->
         {% endfor %}
     </body>
 </html>

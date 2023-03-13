@@ -5,6 +5,10 @@ from app import app
 from flask import render_template, request
 from random import randint
 
+# Bad coding practice, "dirty hack" :D
+payload = ""
+payloads = []
+
 # Register callbacks with URLs
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -19,25 +23,32 @@ def index():
     time.sleep({random_int})\n
     return {random_int2} + {random_int3}
     """.format(random_int=randint(10,60), random_int2=randint(1,10), random_int3=randint(1,10))
-    payload = ""
+    
+    # Tell interpreter where to find payload and payloads
+    global payload
+    global payloads
 
-    # Placeholder payloads
-    payloads = [{"hash" : "0sdkfosr4ij39rjfof93j", "result" : "6"},
-                {"hash" : "dkfmksdnfinrei4ni3ijf", "result" : "pending"},
-                {"hash" : "odsokfndfinsiednfsen3", "result" : "pending"}]
-
+    # POST-request means a button was pressed, figure out which one and either generate a payload or
+    # send the payload forward to be executed in another container
     if request.method == "POST":
         if request.form.get("generate_payload") == "Generate Payload":
-            #print("GET FUCKED NERD", flush=True)
+            # Get new payload
             payload = payload_template
+            # Re-render page and show the payload
             return render_template("index.html", generated_payload=payload, payloads=payloads)
         elif request.form.get("send_payload") == "Send Payload":
-            print("GET FUCKED NERD", flush=True)
-            print(payload, flush=True)
+            # Ignore clicks if payload isn't created
             if len(payload) > 0:
-                print("GET FUCKED NERD", flush=True)
                 print(hash(payload), flush=True)
+                # Store payload, its hash, and current state to a dictionary
+                payloads.append({"hash" : str(hash(payload)), "payload" : payload, "result" : "executing"})
+                # Empty payload so user cannot flood the system with the same payload
+                payload = ""
+                # Re-render page and show the payload in the execution table
                 return render_template("index.html", generated_payload=payload, payloads=payloads)
+    else:
+        payload = ""
+        payloads = []
 
     # Return index.html with additional paremeters
     return render_template("index.html", generated_payload=payload, payloads=payloads)

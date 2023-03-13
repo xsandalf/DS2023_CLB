@@ -12,7 +12,7 @@ Ehkä tekijätkin :D.
 
 ## First Start Guide for \*nix
 
-We strongly recommend using a Python virtual environment. So after pulling the repository and changing into the main directory, create a new virtual environment with: (if you don't have venv-module installed, please install it with pip)
+We strongly recommend using a Python virtual environment. So after cloning the repository and changing into the main directory (DS2023_CLB), create a new virtual environment with: (if you don't have virtualenv-module installed, please install it with pip)
 ```
 python3 -m venv venv/
 ```
@@ -35,7 +35,7 @@ docker-compose up
 
 ## First Start Guide for Windows
 
-We strongly recommend using a Python virtual environment. So after pulling the repository and changing into the main directory, create a new virtual environment with: (if you don't have venv-module installed, please install it with pip)
+We strongly recommend using a Python virtual environment. So after pulling the repository and changing into the main directory (DS2023_CLB), create a new virtual environment with: (if you don't have venv-module installed, please install it with pip)
 ```
 python -m venv venv/
 ```
@@ -43,7 +43,7 @@ It's important to name the virtual environment directory venv/ as that is includ
 
 You can now activate the virtual environment from the main directory:
 ```
-cd venv & cd scripts & activate & cd ../..
+venv\Scripts\activate
 ```
 
 Now install the required packages with pip:
@@ -71,7 +71,7 @@ pip3 install -r requirements.txt
 
 Start CLB:
 ```
-docker-compose up
+docker-compose build & docker-compose up
 ```
 
 ## Quick Start Guide for Windows (for every use after First Start Guide)
@@ -79,7 +79,7 @@ docker-compose up
 In the main directory:
 Activate the virtual environment:
 ```
-cd venv & cd scripts & activate & cd ../..
+venv\Scripts\activate
 ```
 
 Make sure your packages are up to date:
@@ -89,7 +89,7 @@ pip install -r requirements.txt
 
 Start CLB:
 ```
-docker-compose up
+docker-compose build & docker-compose up
 ```
 
 ## Dev Guide for \*nix

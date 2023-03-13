@@ -13,12 +13,16 @@ LEADER = ""
 def index():
     return "Hello, World!"
 
-@app.route("/client_logs", methods=["GET", "POST"])
+@app.route("/logs", methods=["GET", "POST"])
 def client_logs():
     if request.method == "POST":
         print(request.data, flush=True)
-        print("TOIMII VITTU JEE", flush=True)
-    return "Hello, World!"
+        id, log = request.data.decode("utf-8").strip().split(",")
+        with app.app_context():
+            logs = Logs(container_id=id, message=log)
+            db.session.add(logs)
+            db.session.commit()
+    return ("OK", 200)
 
 # Receive information data from containers wishing to register
 @app.route("/register", methods=["GET", "POST"])
@@ -26,7 +30,7 @@ def register_container():
     if request.method == "POST":
         if request.data != "":
             #print(request.data, flush=True)
-            print("läpimätä", flush=True)
+            #print("läpimätä", flush=True)
             # Extract container name and port number from POST-request
             name, port_number = request.data.decode("utf-8").strip().split(",")
             print(name)
@@ -38,10 +42,27 @@ def register_container():
                 container = Container(name=name, port=int(port_number), role=role)
                 db.session.add(container)
                 db.session.commit()
-    return "OK"
+                container = db.session.query(Container).filter_by(port=int(port_number)).first()
+    return (str(container.id), 200)
 
 # Tell requesting container who is the master container
 @app.route("/leader", methods=["GET", "POST"])
 def leader():
     if request.method == "POST":
-        print("jeebus", flush=True)
+        #print("jeebus", flush=True)
+        global LEADER
+        if LEADER == "":
+            container = ""
+            with app.app_context():
+                container = db.session.query(Container).filter_by(role="server").first()
+            LEADER = ",".join((str(container.name), str(container.port)))
+        return (LEADER, 200)
+
+# Empties the database on every build
+@app.before_first_request
+def clear_database():
+    #print("AJSJAJSDIAJSDIASJD", flush=True)
+    with app.app_context():
+        db.session.query(Container).delete()
+        db.session.query(Logs).delete()
+        db.session.commit()

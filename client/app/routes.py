@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # first app = package name (directory app/),
 # second app = Flask class name (variable defined in __init__.py)
-from app import app, PORT_NUMBER
+from app import app, PORT_NUMBER, ID
 from flask import render_template, request
 from random import randint
 import requests
@@ -10,6 +10,8 @@ import requests
 PAYLOAD = ""
 PAYLOADS = []
 LOGS = []
+LEADER_NAME = ""
+LEADER_PORT = -1
 
 # Register callbacks with URLs
 @app.route("/", methods=["GET", "POST"])
@@ -50,8 +52,10 @@ def index():
                 PAYLOAD = ""
                 # Log payload creation and sending
                 LOGS.append("Created payload: {hash}".format(hash=payload_hash))
-                LOGS.append("Sent payload: {hash} for execution".format(hash=payload_hash))
-                send_logging_post_req("LOL XD")
+                LOGS.append("Sent payload: {hash} for execution to port: {port}".format(hash=payload_hash, port=LEADER_PORT))
+                send_logging_post_req("{id},Created payload: {hash}".format(id=ID, hash=payload_hash))
+                send_logging_post_req("{id},Sent payload: {hash} for execution to port: {port}"
+                                      .format(id=ID, hash=payload_hash, port=LEADER_PORT))
                 # Re-render page and show the payload in the execution table
                 return render_template("index.html", generated_payload=PAYLOAD, payloads=PAYLOADS)
     # Reset variables on GET-requests
@@ -75,14 +79,26 @@ def send_logging_post_req(data):
     # URL for database, check port number from /DS2023_CLB/docker-compose.yml for changes
     # URL needs include protocol
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
-    url = "http://database:3003/client_logs"
+    url = "http://database:3003/logs"
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
     requests.post(url, data=data, headers=headers)
 
-"""
+# Ask database for master containers information
 @app.before_first_request
+def get_master_container():
+    global LEADER_NAME
+    global LEADER_PORT
+    # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
+    url = "http://database:3003/leader"
+    # Basic headers
+    headers = {"Content-type": "text/html; charset=UTF-8"}
+    # Send the POST-request with container information to database container
+    LEADER_NAME, LEADER_PORT = requests.post(url, data="", headers=headers).text.split(",")
+    print(LEADER_NAME, flush=True)
+    print(LEADER_PORT, flush=True)
+"""
 def ribuls():
     print("RIPULI ON MÄRKÄÄ KAKKAA", flush=True)
     print(request.environ.get("REMOTE_PORT"), flush=True)

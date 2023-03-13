@@ -12,8 +12,8 @@ payloads = []
 logs = []
 
 # Register callbacks with URLs
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/index', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
+@app.route("/index", methods=["GET", "POST"])
 def index():
     # Payload template to simulate workload (read: python files) that client would input
     # time.sleep emulates a computing heavy file that requires random_int seconds to execute
@@ -25,7 +25,7 @@ def index():
     time.sleep({random_int})\n
     return {random_int2} + {random_int3}
     """.format(random_int=randint(10,60), random_int2=randint(1,10), random_int3=randint(1,10))
-    
+
     # Tell interpreter where to find variables
     global payload
     global payloads
@@ -65,7 +65,7 @@ def index():
 
 
 # Register callbacks with URLs
-@app.route('/logging', methods=['GET', 'POST'])
+@app.route("/logging", methods=["GET", "POST"])
 def logging():
     # Tell interpreter where to find logs
     global logs
@@ -75,6 +75,6 @@ def logging():
 
 def send_logging_post_req(data):
     # URL for database, check port number from /DS2023_CLB/docker-compose.yml for changes
-    url = '127.0.0.1:3003/client_logs'
-    headers = {'Content-type': 'text/html; charset=UTF-8'}
+    url = "127.0.0.1:3003/client_logs"
+    headers = {"Content-type": "text/html; charset=UTF-8"}
     requests.post(url, data=data, headers=headers)

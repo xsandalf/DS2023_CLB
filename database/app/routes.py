@@ -4,7 +4,7 @@
 from app import app
 
 # Register callbacks with URLs
-@app.route('/')
-@app.route('/index')
+@app.route("/")
+@app.route("/index")
 def index():
     return "Hello, World!"

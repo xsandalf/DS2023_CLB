@@ -7,6 +7,8 @@ from datetime import datetime
 class Container(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     port = db.Column(db.Integer, index=True, unique=True)
+    # Either "client" or "server"
+    role = db.Column(db.String(255), index=True)
 
     def __repr__(self):
         return "<Container {}, port {}>".format(self.id, self.port)

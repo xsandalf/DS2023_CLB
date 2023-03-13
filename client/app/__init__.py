@@ -15,10 +15,7 @@ with open("port.txt") as f:
     #print(f.readline(), flush=True)
     port_number = int(f.readline())
 
-# Register container to database
-register_container(port_number=port_number)
-
-# Registers the client container with the database container
+# Registers the client container with the database containers
 def register_container(port_number):
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
     url = "http://database:3003/register"
@@ -26,6 +23,9 @@ def register_container(port_number):
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
     requests.post(url, data=str(port_number), headers=headers)
+
+# Register container to database
+register_container(port_number=port_number)
 
 # Import at the bottom to prevent circular imports
 from app import routes

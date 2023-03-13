@@ -37,7 +37,7 @@ docker-compose up
 
 We strongly recommend using a Python virtual environment. So after pulling the repository and changing into the main directory (DS2023_CLB), create a new virtual environment with: (if you don't have virtualenv-module installed, please install it with pip)
 ```
-python -m venv venv/
+python -m venv venv\
 ```
 It's important to name the virtual environment directory venv/ as that is included in the .gitignore file. Please do not push your venv to our beautiful repository :).
 

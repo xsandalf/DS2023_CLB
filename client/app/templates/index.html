@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+    <head>
+        <title>DS2023_CLB</title>
+    </head>
+    <body>
+        <h1>Create a payload!</h1>
+        <form method="post" action="/">
+            <input type="submit" name="generate_payload" value="Generate Payload">
+            <pre><div>{{ generated_payload }}</div></pre>
+            <input type="submit" name="send_payload" value="Send Payload">
+        </form>
+        {% for payload in payloads %}
+        <div><p>{{ payload.hash }}: <b>{{ payload.result }}</b></p></div>
+        {% endfor %}
+    </body>
+</html>

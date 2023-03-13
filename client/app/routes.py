@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # first app = package name (directory app/),
 # second app = Flask class name (variable defined in __init__.py)
-from app import app, port_number
+from app import app, PORT_NUMBER
 from flask import render_template, request
 from random import randint
 import requests
 
 # Bad coding practice, "dirty hack" :D
-payload = ""
-payloads = []
-logs = []
+PAYLOAD = ""
+PAYLOADS = []
+LOGS = []
 
 # Register callbacks with URLs
 @app.route("/", methods=["GET", "POST"])
@@ -27,49 +27,49 @@ def index():
     """.format(random_int=randint(10,60), random_int2=randint(1,10), random_int3=randint(1,10))
 
     # Tell interpreter where to find variables
-    global payload
-    global payloads
-    global logs
+    global PAYLOAD
+    global PAYLOADS
+    global LOGS
 
     # POST-request means a button was pressed, figure out which one and either generate a payload or
     # send the payload forward to be executed in another container
     if request.method == "POST":
         if request.form.get("generate_payload") == "Generate Payload":
             # Get new payload
-            payload = payload_template
+            PAYLOAD = payload_template
             # Re-render page and show the payload
-            return render_template("index.html", generated_payload=payload, payloads=payloads)
+            return render_template("index.html", generated_payload=PAYLOAD, payloads=PAYLOADS)
         elif request.form.get("send_payload") == "Send Payload":
             # Ignore clicks if payload isn't created
-            if len(payload) > 0:
+            if len(PAYLOAD) > 0:
                 #print(hash(payload), flush=True)
-                payload_hash = hash(payload)
+                payload_hash = hash(PAYLOAD)
                 # Store payload, its hash, and current state to a dictionary
-                payloads.append({"hash" : str(payload_hash), "payload" : payload, "result" : "executing"})
+                PAYLOADS.append({"hash" : str(payload_hash), "payload" : PAYLOAD, "result" : "executing"})
                 # Empty payload so user cannot flood the system with the same payload
-                payload = ""
+                PAYLOAD = ""
                 # Log payload creation and sending
-                logs.append("Created payload: {hash}".format(hash=payload_hash))
-                logs.append("Sent payload: {hash} for execution".format(hash=payload_hash))
+                LOGS.append("Created payload: {hash}".format(hash=payload_hash))
+                LOGS.append("Sent payload: {hash} for execution".format(hash=payload_hash))
                 send_logging_post_req("LOL XD")
                 # Re-render page and show the payload in the execution table
-                return render_template("index.html", generated_payload=payload, payloads=payloads)
+                return render_template("index.html", generated_payload=PAYLOAD, payloads=PAYLOADS)
     # Reset variables on GET-requests
     else:
-        payload = ""
-        payloads = []
-        logs = []
+        PAYLOAD = ""
+        PAYLOADS = []
+        LOGS = []
 
     # Return index.html with additional parameters
-    return render_template("index.html", generated_payload=payload, payloads=payloads)
+    return render_template("index.html", generated_payload=PAYLOAD, payloads=PAYLOADS)
 
 # Register callbacks with URLs
 @app.route("/logging", methods=["GET", "POST"])
 def logging():
     # Tell interpreter where to find logs
-    global logs
+    global LOGS
     # Return logs.html with additional paremeter
-    return render_template("logs.html", logs=logs)
+    return render_template("logs.html", logs=LOGS)
 
 def send_logging_post_req(data):
     # URL for database, check port number from /DS2023_CLB/docker-compose.yml for changes

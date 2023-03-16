@@ -65,6 +65,14 @@ def workers():
                 containers += "{},{},".format(c.name, str(c.port))
         return (containers, 200)
 
+# Tell requesting container who is the client container
+@app.route("/client", methods=["GET", "POST"])
+def client():
+    if request.method == "POST":
+        with app.app_context():
+            client = db.session.query(Container).filter(Container.role == "client").first()
+        return ("{},{}".format(client.name, str(client.port)), 200)
+
 # Empties the database on every build
 @app.before_first_request
 def clear_database():

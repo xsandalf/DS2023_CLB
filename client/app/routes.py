@@ -54,14 +54,18 @@ def index():
                 PAYLOADS.append({"hash" : str(payload_hash), "payload" : PAYLOAD, "result" : "executing"})
                 # Log payload creation and sending
                 LOGS.append("Created payload: {hash}".format(hash=payload_hash))
+                #send_logging_post_req("{id},Created payload: {hash}".format(id=ID, hash=payload_hash))
+                send_request(name="database", port="3003", data="{id},Created payload: {hash}"
+                            .format(id=ID, hash=payload_hash), route="logs")
                 LOGS.append("Sent payload: {hash} for execution to port: {port}".format(hash=payload_hash, port=LEADER_PORT))
-                send_logging_post_req("{id},Created payload: {hash}".format(id=ID, hash=payload_hash))
-                send_logging_post_req("{id},Sent payload: {hash} for execution to port: {port}"
-                                      .format(id=ID, hash=payload_hash, port=LEADER_PORT))
-
+                #send_logging_post_req("{id},Sent payload: {hash} for execution to port: {port}"
+                #                      .format(id=ID, hash=payload_hash, port=LEADER_PORT))
+                send_request(name="database", port="3003", data="{id},Sent payload: {hash} for execution to port: {port}"
+                            .format(id=ID, hash=payload_hash, port=LEADER_PORT), route="logs")
                 # Send payload to master container
                 # LOG THE RETURN
-                response = send_payload(",".join([str(payload_hash), PAYLOAD]))
+                response = send_request(name=LEADER_NAME, port=LEADER_PORT,
+                                        data=",".join([str(payload_hash), PAYLOAD]), route="payload")
                 if response.text != "OK":
                     print("OH OH", flush=True)
                 # Empty payload so user cannot flood the system with the same payload
@@ -85,6 +89,17 @@ def logging():
     # Return logs.html with additional paremeter
     return render_template("logs.html", logs=LOGS)
 
+@app.route("/result", methods=["GET", "POST"])
+def result():
+    global ID
+    if request.method == "POST":
+        hash, result = request.data.decode("utf-8").strip().split(",")
+        LOGS.append("Received result: {hash}".format(hash=hash))
+        #send_logging_post_req("{id},Received result: {hash}".format(id=ID, hash=hash))
+        send_request(name="database", port="3003", data="{id},Received result: {hash}".format(id=ID, hash=hash), route="logs")
+        print(result, flush=True)
+    return ("OK", 200)
+
 def send_logging_post_req(data):
     # URL for database, check port number from /DS2023_CLB/docker-compose.yml for changes
     # URL needs include protocol
@@ -95,10 +110,10 @@ def send_logging_post_req(data):
     # Send the POST-request with log data to database container
     requests.post(url, data=data, headers=headers)
 
-def send_payload(data):
+def send_request(name, port, data, route):
     # URL needs include protocol
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
-    url = "http://{}:{}/payload".format(LEADER_NAME, LEADER_PORT)
+    url = "http://{}:{}/{}".format(name, port, route)
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container

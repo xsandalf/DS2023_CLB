@@ -45,7 +45,6 @@ def payload():
             print(response, flush=True)
             return (response, 200)
         else:
-            print(request.remote_addr, flush=True)
             hash, payload = request.data.decode("utf-8").strip().split(",")
             LOGS.append("Received payload: {hash}".format(hash=hash))
             send_logging_post_req("{id},Received payload: {hash}".format(id=ID, hash=hash))
@@ -134,7 +133,6 @@ def send_payload(name, port, data):
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
-    requests.post(url, data=data, headers=headers)
     hash, sum = requests.post(url, data=data, headers=headers).text.split(",")
     print("{},{}".format(hash,sum), flush=True)
     return ("{},{}".format(hash,sum))

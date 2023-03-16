@@ -21,11 +21,10 @@ def index():
     # time.sleep emulates a computing heavy file that requires random_int seconds to execute
     # returns a sum of two integers to signify execution has ended
     payload_template = """
-    #!/usr/bin/env python3\n
     import time\n
     \n
     time.sleep({random_int})\n
-    return {random_int2} + {random_int3}
+    print({random_int2} + {random_int3})
     """.format(random_int=randint(10,60), random_int2=randint(1,10), random_int3=randint(1,10))
 
     # Tell interpreter where to find variables
@@ -56,8 +55,10 @@ def index():
                                       .format(id=ID, hash=payload_hash, port=LEADER_PORT))
 
                 # Send payload to master container
-                print(PAYLOAD, flush=True)
-                send_payload(",".join([str(payload_hash), PAYLOAD]))
+                #print(PAYLOAD, flush=True)
+                # LOG THE RETURN
+                response = send_payload(",".join([str(payload_hash), PAYLOAD]))
+                print(response.split(","), flush=True)
                 # Empty payload so user cannot flood the system with the same payload
                 PAYLOAD = ""
                 # Re-render page and show the payload in the execution table
@@ -97,7 +98,13 @@ def send_payload(data):
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
-    requests.post(url, data=data, headers=headers)
+    response = requests.post(url, data=data, headers=headers)
+    print(type(response), flush=True)
+    print(response, flush=True)
+    print(response.text, flush=True)
+    #hash, sum = requests.post(url, data=data, headers=headers).text.split(",")
+    #print("{},{}".format(hash,sum), flush=True)
+    return response.text
 
 # Ask database for master containers information
 @app.before_first_request

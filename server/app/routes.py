@@ -30,44 +30,62 @@ def payload():
         #print("JSJSDKD", flush=True)
         if IS_LEADER:
             hash, payload = request.data.decode("utf-8").strip().split(",")
-            print(payload, flush=True)
+            #print(payload, flush=True)
             #print("JSJSDKD", flush=True)
             LOGS.append("Received payload: {hash}".format(hash=hash))
             send_logging_post_req("{id},Received payload: {hash}".format(id=ID, hash=hash))
             loads = get_container_loads()
-            print(loads, flush=True)
+            #print(loads, flush=True)
             idx = loads.index(min(loads))
-            print(idx)
-            print(CONTAINERS, flush=True)
+            #print(idx)
+            #print(CONTAINERS, flush=True)
             name = CONTAINERS[idx*2]
             port = CONTAINERS[idx*2+1]
             container = "{}, {}".format(name, port)
-            print(container, flush=True)
+            #print(container, flush=True)
             CONTAINER_WORKLOADS[int(idx / 2)].append(hash)
             LOGS.append("Sent payload: {hash} for execution to port: {port}".format(hash=hash, port=port))
             send_logging_post_req("{id},Sent payload: {hash} for execution to port: {port}"
                                   .format(id=ID, hash=hash, port=port))
-            print(payload, flush=True)
-            send_payload(name=name, port=port, data=",".join([str(hash), payload]))
+            #print(payload, flush=True)
+            # LOG THE RETURN
+            response = send_payload(name=name, port=port, data=",".join([str(hash), payload]))
+            print(response, flush=True)
+            return (response, 200)
         else:
+            print(request.remote_addr, flush=True)
             hash, payload = request.data.decode("utf-8").strip().split(",")
             LOGS.append("Received payload: {hash}".format(hash=hash))
             send_logging_post_req("{id},Received payload: {hash}".format(id=ID, hash=hash))
             WORKLOAD.append({"hash" : hash, "payload": payload})
-            print(payload, flush=True)
+            #print(payload, flush=True)
             # THIS IS BORKED
-            return_code = subprocess.call("python3 -c \"{}\"".format(payload.replace("\n", "").strip(), shell=True))
-            print(return_code, flush=True)
-    return ("", 200)
+            code = payload.split("\n")
+            runnable = ""
+            for c in code:
+                if not (len(c) == 0 or c.isspace()):
+                    #print(c[4:], flush=True)
+                    runnable += c[4:]
+                    runnable += ";"
+            runnable = runnable[:-1]
+            #print(code, flush=True)
+            #print(runnable, flush=True)
+            #return_code = subprocess.call("python3 -c \"{}\"".format(payload.replace("\n\n","\n").replace("\n", ";").strip(), shell=True))
+            stdout = subprocess.check_output(["python", "-c", runnable]).decode("utf-8").strip()
+            print(stdout, flush=True)
+            return ("{},{}".format(hash,stdout), 200)
+    #return ("", 200)
 
 @app.route("/load" , methods=["GET", "POST"])
 def load():
     if request.method == "POST":
         cpu = psutil.cpu_percent(4)
         ram = psutil.virtual_memory()[2]
-        print('The CPU usage is: ', cpu, flush=True)
+        #print('The CPU usage is: ', cpu, flush=True)
+        LOGS.append("The CPU usage is: {}".format(cpu))
         send_logging_post_req("{id},CPU usage: {cpu}".format(id=ID, cpu=cpu))
-        print('RAM memory % used:', ram, flush=True)
+        #print('RAM memory % used:', ram, flush=True)
+        LOGS.append("RAM memory /%/ used: {}".format(ram))
         send_logging_post_req("{id},RAM usage: {ram}".format(id=ID, ram=ram))
     return ("{},{}".format(cpu,ram), 200)
 
@@ -131,8 +149,11 @@ def send_payload(name, port, data):
     # URL needs include protocol
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
     url = "http://{}:{}/payload".format(name, port)
-    print(url, flush=True)
+    #print(url, flush=True)
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
     requests.post(url, data=data, headers=headers)
+    hash, sum = requests.post(url, data=data, headers=headers).text.split(",")
+    print("{},{}".format(hash,sum), flush=True)
+    return ("{},{}".format(hash,sum))

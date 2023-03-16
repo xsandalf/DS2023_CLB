@@ -23,9 +23,15 @@ def index():
     payload_template = """
     import time\n
     \n
-    time.sleep({random_int})\n
-    print({random_int2} + {random_int3})
-    """.format(random_int=randint(10,60), random_int2=randint(1,10), random_int3=randint(1,10))
+    time.sleep(20)\n
+    print(2 + 2)
+    """#.format(random_int=randint(10,60), random_int2=randint(1,10), random_int3=randint(1,10))
+    #payload_template = """
+    #import time\n
+    #\n
+    #time.sleep({random_int})\n
+    #print({random_int2} + {random_int3})
+    #""".format(random_int=randint(10,60), random_int2=randint(1,10), random_int3=randint(1,10))
 
     # Tell interpreter where to find variables
     global PAYLOAD
@@ -56,7 +62,8 @@ def index():
                 # Send payload to master container
                 # LOG THE RETURN
                 response = send_payload(",".join([str(payload_hash), PAYLOAD]))
-                print(response.split(","), flush=True)
+                if response.text != "OK":
+                    print("OH OH", flush=True)
                 # Empty payload so user cannot flood the system with the same payload
                 PAYLOAD = ""
                 # Re-render page and show the payload in the execution table
@@ -95,11 +102,7 @@ def send_payload(data):
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
-    response = requests.post(url, data=data, headers=headers)
-    print(type(response), flush=True)
-    print(response, flush=True)
-    print(response.text, flush=True)
-    return response.text
+    return requests.post(url, data=data, headers=headers)
 
 # Ask database for master containers information
 @app.before_first_request

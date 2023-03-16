@@ -6,6 +6,7 @@ from flask import render_template, request
 import requests
 import psutil
 import subprocess
+import threading
 
 # Bad coding practice, "dirty hack" :D
 PAYLOAD = ""
@@ -29,6 +30,26 @@ def payload():
     if request.method == "POST":
         if IS_LEADER:
             hash, payload = request.data.decode("utf-8").strip().split(",")
+            def long_running_task(**kwargs):
+                LOGS.append("Received payload: {hash}".format(hash=hash))
+                send_logging_post_req("{id},Received payload: {hash}".format(id=ID, hash=hash))
+                loads = get_container_loads()
+                idx = loads.index(min(loads))
+                name = CONTAINERS[idx*2]
+                port = CONTAINERS[idx*2+1]
+                container = "{}, {}".format(name, port)
+                CONTAINER_WORKLOADS[int(idx / 2)].append(hash)
+                LOGS.append("Sent payload: {hash} for execution to port: {port}".format(hash=hash, port=port))
+                send_logging_post_req("{id},Sent payload: {hash} for execution to port: {port}"
+                                      .format(id=ID, hash=hash, port=port))
+                # LOG THE RETURN
+                response = send_payload(name=name, port=port, data=",".join([str(hash), payload]))
+                if response.text != "OK":
+                    print("OH OH", flush=True)
+            thread = threading.Thread(target=long_running_task, kwargs={})
+            thread.start()
+            return ("OK", 202)
+            """
             LOGS.append("Received payload: {hash}".format(hash=hash))
             send_logging_post_req("{id},Received payload: {hash}".format(id=ID, hash=hash))
             loads = get_container_loads()
@@ -43,9 +64,28 @@ def payload():
             # LOG THE RETURN
             response = send_payload(name=name, port=port, data=",".join([str(hash), payload]))
             print(response, flush=True)
-            return (response, 200)
+            return (response, 200)"""
         else:
             hash, payload = request.data.decode("utf-8").strip().split(",")
+            def long_running_task(**kwargs):
+                LOGS.append("Received payload: {hash}".format(hash=hash))
+                send_logging_post_req("{id},Received payload: {hash}".format(id=ID, hash=hash))
+                WORKLOAD.append({"hash" : hash, "payload": payload})
+                # THIS IS BORKED
+                code = payload.split("\n")
+                runnable = ""
+                for c in code:
+                    if not (len(c) == 0 or c.isspace()):
+                        #print(c[4:], flush=True)
+                        runnable += c[4:]
+                        runnable += ";"
+                runnable = runnable[:-1]
+                stdout = subprocess.check_output(["python", "-c", runnable]).decode("utf-8").strip()
+                print(stdout, flush=True)
+            thread = threading.Thread(target=long_running_task, kwargs={})
+            thread.start()
+            return ("OK", 202)
+            """
             LOGS.append("Received payload: {hash}".format(hash=hash))
             send_logging_post_req("{id},Received payload: {hash}".format(id=ID, hash=hash))
             WORKLOAD.append({"hash" : hash, "payload": payload})
@@ -60,7 +100,7 @@ def payload():
             runnable = runnable[:-1]
             stdout = subprocess.check_output(["python", "-c", runnable]).decode("utf-8").strip()
             print(stdout, flush=True)
-            return ("{},{}".format(hash,stdout), 200)
+            return ("{},{}".format(hash,stdout), 200)"""
 
 @app.route("/load" , methods=["GET", "POST"])
 def load():
@@ -133,6 +173,7 @@ def send_payload(name, port, data):
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
-    hash, sum = requests.post(url, data=data, headers=headers).text.split(",")
-    print("{},{}".format(hash,sum), flush=True)
-    return ("{},{}".format(hash,sum))
+    return requests.post(url, data=data, headers=headers)
+    #hash, sum = requests.post(url, data=data, headers=headers).text.split(",")
+    #print("{},{}".format(hash,sum), flush=True)
+    #return ("{},{}".format(hash,sum))

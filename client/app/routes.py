@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # first app = package name (directory app/),
 # second app = Flask class name (variable defined in __init__.py)
-from app import app, ID
+from app import app, ID, PORT_NUMBER
 from flask import render_template, request
 from random import randint
 import requests
@@ -12,6 +12,7 @@ PAYLOADS = []
 LOGS = []
 LEADER_NAME = ""
 LEADER_PORT = -1
+QUEUE = []
 
 # Register callbacks with URLs
 @app.route("/", methods=["GET", "POST"])
@@ -37,6 +38,7 @@ def index():
     global PAYLOAD
     global PAYLOADS
     global LOGS
+    global QUEUE
 
     # POST-request means a button was pressed, figure out which one and either generate a payload or
     # send the payload forward to be executed in another container
@@ -67,7 +69,10 @@ def index():
                 response = send_request(name=LEADER_NAME, port=LEADER_PORT,
                                         data=",".join([str(payload_hash), PAYLOAD]), route="payload")
                 if response.text != "OK":
-                    print("OH OH", flush=True)
+                    LOGS.append("Leader has crashed")
+                    send_request(name="database", port="3003", data="{id},Leader has crashed".format(id=ID), route="logs")
+                    QUEUE.append(",".join([str(payload_hash), PAYLOAD]))
+                    send_request(name="database", port="3003", data="{},{}".format(PORT_NUMBER, LEADER_PORT), route="down")
                 # Empty payload so user cannot flood the system with the same payload
                 PAYLOAD = ""
                 # Re-render page and show the payload in the execution table
@@ -100,6 +105,20 @@ def result():
         print(result, flush=True)
     return ("OK", 200)
 
+@app.route("/leader", methods=["POST"])
+def leader():
+    global LEADER_NAME
+    global LEADER_PORT
+    if request.method == "POST":
+        LEADER_NAME, LEADER_PORT = request.data.decode("utf-8").strip().split(",")
+        for data in QUEUE:
+            hash = data.split(",")[0]
+            LOGS.append("Sent payload: {hash} for execution to port: {port}".format(hash=hash, port=LEADER_PORT))
+            send_request(name="database", port="3003", data="{id},Sent payload: {hash} for execution to port: {port}"
+                        .format(id=ID, hash=hash, port=LEADER_PORT), route="logs")
+            response = send_request(name=LEADER_NAME, port=LEADER_PORT, data=data, route="payload")
+    return ("OK", 200)
+"""
 def send_logging_post_req(data):
     # URL for database, check port number from /DS2023_CLB/docker-compose.yml for changes
     # URL needs include protocol
@@ -109,7 +128,7 @@ def send_logging_post_req(data):
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
     requests.post(url, data=data, headers=headers)
-
+"""
 def send_request(name, port, data, route):
     # URL needs include protocol
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1

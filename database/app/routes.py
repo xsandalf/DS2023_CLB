@@ -4,6 +4,8 @@
 from app import app, db
 from app.models import Container, Logs
 from flask import render_template, request
+import requests
+import threading
 
 LEADER = ""
 
@@ -73,6 +75,28 @@ def client():
             client = db.session.query(Container).filter(Container.role == "client").first()
         return ("{},{}".format(client.name, str(client.port)), 200)
 
+@app.route("/down", methods=["GET", "POST"])
+def down():
+    if request.method == "POST":
+        port_number, down_port = request.data.decode("utf-8").strip().split(",")
+        if port_number != down_port:
+            def long_running_task(**kwargs):
+                with app.app_context():
+                    global LEADER
+                    db.session.query(Container).filter(Container.port == down_port).delete()
+                    db.session.commit()
+                    if down_port == LEADER.split(",")[1]:
+                        new_leader = db.session.query(Container).filter_by(role="server").first()
+                        LEADER = ",".join((str(new_leader.name), str(new_leader.port)))
+                        servers = db.session.query(Container).filter_by(role="server").all()
+                        for c in servers:
+                            send_request(name=c.name, port=c.port, data=LEADER, route="leader")
+                        client = db.session.query(Container).filter_by(role="client").first()
+                        send_request(name=client.name, port=client.port, data=LEADER, route="leader")
+            thread = threading.Thread(target=long_running_task, kwargs={})
+            thread.start()
+        return ("OK", 202)
+
 # Empties the database on every build
 @app.before_first_request
 def clear_database():
@@ -80,3 +104,12 @@ def clear_database():
         db.session.query(Container).delete()
         db.session.query(Logs).delete()
         db.session.commit()
+
+def send_request(name, port, data, route):
+    # URL needs include protocol
+    # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
+    url = "http://{}:{}/{}".format(name, port, route)
+    # Basic headers
+    headers = {"Content-type": "text/html; charset=UTF-8"}
+    # Send the POST-request with log data to database container
+    return requests.post(url, data=data, headers=headers)

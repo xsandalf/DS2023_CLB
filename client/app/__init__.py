@@ -26,10 +26,9 @@ def register_container(port_number):
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with container information to database container
     ID = int(requests.post(url, data="{},{}".format(NAME, PORT_NUMBER), headers=headers).text)
-    print(ID, flush=True)
 
 # Register container to database
-register_container(port_number=PORT_NUMBER)
+_ = register_container(port_number=PORT_NUMBER)
 
 # Import at the bottom to prevent circular imports
 from app import routes

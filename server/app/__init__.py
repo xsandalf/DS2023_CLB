@@ -11,7 +11,7 @@ app.config.from_object(Config)
 
 PORT_NUMBER = -1
 NAME = ""
-ID = -1
+FIRST_ID = -1
 LEADER_NAME = ""
 LEADER_PORT = -1
 IS_LEADER = False
@@ -22,13 +22,15 @@ with open("port.txt") as f:
 
 # Registers the client container with the database container
 def register_container(port_number):
-    global ID
+    global FIRST_ID
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
     url = "http://database:3003/register"
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with container information to database container
-    ID = int(requests.post(url, data="{},{}".format(NAME, PORT_NUMBER), headers=headers).text)
+    FIRST_ID = int(requests.post(url, data="{},{}".format(NAME, PORT_NUMBER), headers=headers).text)
+    print(FIRST_ID, flush=True)
+    return FIRST_ID
 
 def get_master_container():
     global IS_LEADER

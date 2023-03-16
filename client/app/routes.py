@@ -43,7 +43,6 @@ def index():
         elif request.form.get("send_payload") == "Send Payload":
             # Ignore clicks if payload isn't created
             if len(PAYLOAD) > 0:
-                #print(hash(payload), flush=True)
                 payload_hash = hash(PAYLOAD)
                 # Store payload, its hash, and current state to a dictionary
                 PAYLOADS.append({"hash" : str(payload_hash), "payload" : PAYLOAD, "result" : "executing"})
@@ -55,7 +54,6 @@ def index():
                                       .format(id=ID, hash=payload_hash, port=LEADER_PORT))
 
                 # Send payload to master container
-                #print(PAYLOAD, flush=True)
                 # LOG THE RETURN
                 response = send_payload(",".join([str(payload_hash), PAYLOAD]))
                 print(response.split(","), flush=True)
@@ -94,7 +92,6 @@ def send_payload(data):
     # URL needs include protocol
     # docker-compose provides a DNS so we can use database, instead of 127.0.0.1
     url = "http://{}:{}/payload".format(LEADER_NAME, LEADER_PORT)
-    #print(url, flush=True)
     # Basic headers
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with log data to database container
@@ -102,8 +99,6 @@ def send_payload(data):
     print(type(response), flush=True)
     print(response, flush=True)
     print(response.text, flush=True)
-    #hash, sum = requests.post(url, data=data, headers=headers).text.split(",")
-    #print("{},{}".format(hash,sum), flush=True)
     return response.text
 
 # Ask database for master containers information
@@ -117,5 +112,3 @@ def get_master_container():
     headers = {"Content-type": "text/html; charset=UTF-8"}
     # Send the POST-request with container information to database container
     LEADER_NAME, LEADER_PORT = requests.post(url, data="", headers=headers).text.split(",")
-    #print(LEADER_NAME, flush=True)
-    #print(LEADER_PORT, flush=True)

@@ -29,16 +29,10 @@ def client_logs():
 def register_container():
     if request.method == "POST":
         if request.data != "":
-            #print(request.data, flush=True)
-            #print("läpimätä", flush=True)
             # Extract container name and port number from POST-request
             name, port_number = request.data.decode("utf-8").strip().split(",")
-            #print(name)
-            #print(port_number)
             role = "client" if name == "client" else "server"
-            #print(role)
             with app.app_context():
-                #container = Container.query.filter_by(port=port_number).first()
                 container = Container(name=name, port=int(port_number), role=role)
                 db.session.add(container)
                 db.session.commit()
@@ -49,7 +43,6 @@ def register_container():
 @app.route("/leader", methods=["GET", "POST"])
 def leader():
     if request.method == "POST":
-        #print("jeebus", flush=True)
         global LEADER
         if LEADER == "":
             container = ""
@@ -70,16 +63,11 @@ def workers():
             containers = ""
             for c in container:
                 containers += "{},{},".format(c.name, str(c.port))
-            #print("________", flush=True)
-            #print(container, flush=True)
-            #print(containers)
-            #print("________", flush=True)
         return (containers, 200)
 
 # Empties the database on every build
 @app.before_first_request
 def clear_database():
-    #print("AJSJAJSDIAJSDIASJD", flush=True)
     with app.app_context():
         db.session.query(Container).delete()
         db.session.query(Logs).delete()

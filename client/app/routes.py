@@ -97,12 +97,16 @@ def logging():
 @app.route("/result", methods=["GET", "POST"])
 def result():
     global ID
+    global PAYLOADS
     if request.method == "POST":
         hash, result = request.data.decode("utf-8").strip().split(",")
         LOGS.append("Received result: {hash}".format(hash=hash))
         #send_logging_post_req("{id},Received result: {hash}".format(id=ID, hash=hash))
         send_request(name="database", port="3003", data="{id},Received result: {hash}".format(id=ID, hash=hash), route="logs")
         print(result, flush=True)
+        for payload in PAYLOADS:
+            if payload["hash"] == hash:
+                payload["result"] = result
     return ("OK", 200)
 
 @app.route("/leader", methods=["POST"])
@@ -118,6 +122,19 @@ def leader():
                         .format(id=ID, hash=hash, port=LEADER_PORT), route="logs")
             response = send_request(name=LEADER_NAME, port=LEADER_PORT, data=data, route="payload")
     return ("OK", 200)
+
+@app.route("/pending", methods=["POST"])
+def pending():
+    global PAYLOADS
+    if request.method == "POST":
+        response = ""
+        for payload in PAYLOADS:
+            if payload["result"] == "executing":
+                response += "{},".format(payload["hash"])
+        if response != "":
+            response = response[:-1]
+    return (response, 200)
+
 """
 def send_logging_post_req(data):
     # URL for database, check port number from /DS2023_CLB/docker-compose.yml for changes

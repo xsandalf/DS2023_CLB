@@ -20,6 +20,7 @@ CLIENT_PORT = -1
 IS_STOPPED = False
 QUEUE = []
 ID = FIRST_ID
+MISSING = []
 
 # Register callbacks with URLs
 @app.route("/")
@@ -93,7 +94,6 @@ def payload():
                 send_request(name="database", port="3003", data="{id},Received payload: {hash}"
                             .format(id=ID, hash=hash), route="logs")
                 WORKLOAD.append({"hash" : hash, "payload": payload})
-                # THIS IS BORKED
                 code = payload.split("\n")
                 runnable = ""
                 for c in code:
@@ -110,6 +110,7 @@ def payload():
                 send_request(name="database", port="3003", data="{id},Sent result: {hash} for leader to port: {port}"
                             .format(id=ID, hash=hash, port=LEADER_PORT), route="logs")
                 response = send_request(name=LEADER_NAME, port=LEADER_PORT, data=",".join([PORT_NUMBER, str(hash), stdout]), route="result")
+                WORKLOAD.remove({"hash" : hash, "payload": payload})
                 if response.text != "OK":
                     LOGS.append("Leader has crashed")
                     send_request(name="database", port="3003", data="{id},Leader has crashed".format(id=ID), route="logs")
@@ -143,6 +144,7 @@ def result():
     global CLIENT
     global CLIENT_PORT
     global ID
+    global MISSING
     if IS_STOPPED:
         return ("I am simulating a crash, please do not bother me", 418)
     if request.method == "POST":
@@ -150,7 +152,11 @@ def result():
         LOGS.append("Received result: {hash}".format(hash=hash))
         #send_logging_post_req("{id},Received result: {hash}".format(id=ID, hash=hash))
         send_request(name="database", port="3003", data="{id},Received result: {hash}".format(id=ID, hash=hash), route="logs")
-        CONTAINER_WORKLOADS[int(CONTAINERS.index(port.strip())/2)].remove(hash)
+        try:
+            if MISSING.index(hash):
+                MISSING.remove(hash)
+        except ValueError:
+                CONTAINER_WORKLOADS[int(CONTAINERS.index(port.strip())/2)].remove(hash)
         LOGS.append("Sent result: {hash} for client to port: {port}".format(hash=hash, port=CLIENT_PORT))
         #send_logging_post_req("{id},Sent result: {hash} for client to port: {port}"
         #                      .format(id=ID, hash=hash, port=CLIENT_PORT))
@@ -192,22 +198,28 @@ def leader():
         name, port = request.data.decode("utf-8").strip().split(",")
         if int(PORT_NUMBER) == int(port):
             IS_LEADER = True
-            get_containers()
             get_client()
+            get_pending()
+            get_containers()
             for data in QUEUE:
-                hash, result = data.split(",")
+                _, hash, result = data.split(",")
+                if MISSING.index(hash):
+                    MISSING.remove(hash)
                 LOGS.append("Sent result: {hash} for client to port: {port}".format(hash=hash, port=CLIENT_PORT)
                             .format(id=ID, hash=hash, port=CLIENT_PORT))
                 send_request(name="database", port="3003", data="{id},Sent result: {hash} for client to port: {port}"
                             .format(id=ID, hash=hash, port=CLIENT_PORT), route="logs")
                 send_request(name=CLIENT, port=CLIENT_PORT, data=data, route="result")
+            find_missing()
+            get_missing()
         LEADER_NAME = name
         LEADER_PORT = port
         for data in QUEUE:
+            _, hash, result = data.split(",")
             LOGS.append("Sent result: {hash} for leader to port: {port}".format(hash=hash, port=LEADER_PORT))
             send_request(name="database", port="3003", data="{id},Sent result: {hash} for leader to port: {port}"
                         .format(id=ID, hash=hash, port=LEADER_PORT), route="logs")
-            send_request(name=LEADER_NAME, port=LEADER_PORT, data=",".join([PORT_NUMBER, str(hash), stdout]), route="result")
+            send_request(name=LEADER_NAME, port=LEADER_PORT, data=",".join([PORT_NUMBER, str(hash), result]), route="result")
     return ("OK", 200)
 
 @app.route("/register", methods=["POST"])
@@ -223,6 +235,17 @@ def register():
         CONTAINERS.append(port)
         CONTAINER_WORKLOADS.append([])
     return ("OK", 200)
+
+@app.route("/pending", methods=["POST"])
+def pending():
+    global WORKLOAD
+    if request.method == "POST":
+        response = ""
+        for work in WORKLOAD:
+            response += "{},".format(work["hash"])
+        if response != "":
+            response = response[:-1]
+    return (response, 200)
 
 # Ask database for worker containers
 @app.before_first_request
@@ -317,3 +340,38 @@ def send_request(name, port, data, route):
     #hash, sum = requests.post(url, data=data, headers=headers).text.split(",")
     #print("{},{}".format(hash,sum), flush=True)
     #return ("{},{}".format(hash,sum))
+
+def get_pending():
+    global CLIENT
+    global CLIENT_PORT
+    global MISSING
+    response = send_request(name=CLIENT, port=CLIENT_PORT, data="", route="pending")
+    pending_hashes = response.text.split(",")
+    print(pending_hashes, flush=True)
+    LOGS.append("Got pending hashes from client")
+    send_request(name="database", port="3003", data="{id},Got pending hashes from client".format(id=ID))
+    MISSING.append(pending_hashes)
+
+def find_missing():
+    global MISSING
+    for i in range(0, len(CONTAINERS), 2):
+        response = send_request(name=CONTAINERS[i], port=CONTAINERS[i+1], data="", route="pending")
+        pending_hashes = response.text.split(",")
+        print(pending_hashes, flush=True)
+        LOGS.append("Ask for pending hashes from workers")
+        send_request(name="database", port="3003", data="{id},Ask for pending hashes from workers".format(id=ID))
+        for hash in pending_hashes:
+            if MISSING.index(hash) != -1:
+                MISSING.remove(hash)
+
+def get_missing():
+    global CLIENT
+    global CLIENT_PORT
+    global QUEUE
+    response = send_request(name=CLIENT, port=CLIENT_PORT, data="", route="missing")
+    pending_payloads = response.text.split(",")
+    print(pending_hashes, flush=True)
+    LOGS.append("Ask for missing payloads from client")
+    send_request(name="database", port="3003", data="{id},Ask for missing payloads from client".format(id=ID))
+    for i in range(0, len(pending_payloads), 2):
+        QUEUE.append(",".join([str(pending_payloads[i]), pending_payloads[i+1]]))

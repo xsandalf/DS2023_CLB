@@ -9,6 +9,7 @@ app = Flask(__name__)
 # Apply config file
 app.config.from_object(Config)
 
+# Use global variables as local cache
 PORT_NUMBER = -1
 NAME = ""
 FIRST_ID = -1
@@ -32,6 +33,7 @@ def register_container(port_number):
     print(FIRST_ID, flush=True)
     return FIRST_ID
 
+# Ask database who is the master container
 def get_master_container():
     global IS_LEADER
     global LEADER_NAME

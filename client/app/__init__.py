@@ -9,6 +9,7 @@ app = Flask(__name__)
 # Apply config file
 app.config.from_object(Config)
 
+# Use global variables as local cache
 PORT_NUMBER = -1
 NAME = ""
 ID = -1

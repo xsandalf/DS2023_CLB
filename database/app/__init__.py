@@ -14,8 +14,10 @@ db = SQLAlchemy(app)
 # Database migration instances
 migrate = Migrate(app, db, render_as_batch=True)
 
+# Use global variables as local cache
 PORT_NUMBER = -1
 NAME = ""
+
 # Read port number and name from text file, created in Dockerfile
 with open("port.txt") as f:
     NAME, PORT_NUMBER = f.readline().split(",")

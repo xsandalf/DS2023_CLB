@@ -126,11 +126,23 @@ def leader():
 @app.route("/pending", methods=["POST"])
 def pending():
     global PAYLOADS
+    response = ""
     if request.method == "POST":
-        response = ""
         for payload in PAYLOADS:
             if payload["result"] == "executing":
                 response += "{},".format(payload["hash"])
+        if response != "":
+            response = response[:-1]
+    return (response, 200)
+
+@app.route("/missing", methods=["POST"])
+def missing():
+    global PAYLOADS
+    response = ""
+    if request.method == "POST":
+        for payload in PAYLOADS:
+            if payload["result"] == "executing":
+                response += "{},{},".format(payload["hash"], payload["payload"])
         if response != "":
             response = response[:-1]
     return (response, 200)

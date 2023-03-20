@@ -120,6 +120,16 @@ def down():
             thread.start()
         return ("OK", 202)
 
+# Register callbacks with URLs
+# Page for viewing database logs
+@app.route("/logging", methods=["GET", "POST"])
+def logging():
+    # Get all the logs from database
+    with app.app_context():
+        logs = db.session.query(Logs).all()
+    # Return logs.html with additional paremeter
+    return render_template("logs.html", logs=logs)
+
 # Empties the database on every build
 @app.before_first_request
 def clear_database():

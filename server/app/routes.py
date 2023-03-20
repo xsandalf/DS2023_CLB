@@ -190,8 +190,6 @@ def result():
             if MISSING.index(hash):
                 MISSING.remove(hash)
         except ValueError:
-            print(port, flush=True)
-            print(PORT_NUMBER, flush=True)
             if port != PORT_NUMBER:
                 CONTAINER_WORKLOADS[int(CONTAINERS.index(port.strip())/2)].remove(hash)
         # Log the sending of results to client container
@@ -335,6 +333,15 @@ def pending():
         if response != "":
             response = response[:-1]
     return (response, 200)
+
+# Register callbacks with URLs
+# Page for viewing server logs
+@app.route("/logging", methods=["GET", "POST"])
+def logging():
+    # Tell interpreter where to find variables
+    global LOGS
+    # Return logs.html with additional paremeter
+    return render_template("logs.html", logs=LOGS)
 
 # Ask database for worker containers
 @app.before_first_request

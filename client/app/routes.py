@@ -22,12 +22,6 @@ def index():
     # Payload template to simulate workload (read: python files) that client would input
     # time.sleep emulates a computing heavy file that requires random_int seconds to execute
     # returns a sum of two integers to signify execution has ended
-    #payload_template = """
-    #import time\n
-    #\n
-    #time.sleep(20)\n
-    #print(2 + 2)
-    #.format(random_int=randint(10,60), random_int2=randint(1,10), random_int3=randint(1,10))
     payload_template = """
     import time\n
     \n
